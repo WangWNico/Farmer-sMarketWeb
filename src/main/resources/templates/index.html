@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Farmers Markets</title>
+</head>
+<body>
+<h1>Farmers Markets</h1>
+<div th:each="market : ${markets}">
+    <p th:text="${market.MarketName}"></p>
+    <p th:text="${market.city} + ', ' + ${market.State} + ' ' + ${market.zip}"></p>
+    <p th:text="'Rating: ' + ${market.average_rating}"></p>
+</div>
+<div>
+    <button th:if="${page > 0}" th:onclick="'window.location.href=\'/?page=' + (${page} - 1) + '&size=' + ${size} + '\''">Previous</button>
+    <button th:if="${markets.size() == size}" th:onclick="'window.location.href=\'/?page=' + (${page} + 1) + '&size=' + ${size} + '\''">Next</button>
+</div>
+</body>
+</html>
