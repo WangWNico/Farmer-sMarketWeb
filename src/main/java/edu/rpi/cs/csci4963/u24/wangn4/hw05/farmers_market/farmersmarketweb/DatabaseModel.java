@@ -77,7 +77,7 @@ public class DatabaseModel {
      * @throws Exception If an error occurs while generating the table or reading the CSV file.
      */
     private void generateTableZipCodes() throws Exception {
-        URL url = this.getClass().getResource("zip_codes_states.csv");
+        URL url = this.getClass().getClassLoader().getResource("zip_codes_states.csv");
 
         // create table
         connection.createStatement().executeUpdate("""
@@ -174,7 +174,7 @@ public class DatabaseModel {
      * @throws Exception If an error occurs while generating the table or reading the CSV file.
      */
     private void generateTableFarmersMarket() throws Exception {
-        URL url = this.getClass().getResource("Export.csv");
+        URL url = this.getClass().getClassLoader().getResource("Export.csv");
 
         // create table
         connection.createStatement().executeUpdate("""
@@ -261,7 +261,6 @@ public class DatabaseModel {
                     "Nursery, Nuts, Plants, Poultry, Prepared, Soap, Trees, Wine, Coffee, Beans, Fruits, Grains, Juices, " +
                     "Mushrooms, PetFood, Tofu, WildHarvested, updateTime) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            int count = 1;
 
             // buffer for SQL query
             StringBuilder builder = new StringBuilder();
@@ -277,7 +276,6 @@ public class DatabaseModel {
             // reads every csv line
             String[] data;
             while ((data = reader.readNext()) != null) {
-                count++;
                 preparedStatement.setInt(1, Integer.parseInt(data[0]));
 
                 for (int i = 1; i < 20; i++)
@@ -343,6 +341,30 @@ public class DatabaseModel {
     }
 
     /**
+     * Searches for markets based on a query string with pagination.
+     *
+     * @param query The query string to search for.
+     * @param offset The offset for pagination.
+     * @param limit The limit for pagination.
+     * @return A ResultSet containing the search results.
+     */
+    public ResultSet searchMarkets(String query, int offset, int limit) {
+        String sql = "SELECT MarketName FROM farmers_market WHERE city LIKE ? OR State LIKE ? OR zip LIKE ? LIMIT ? OFFSET ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, "%" + query + "%");
+            preparedStatement.setString(2, "%" + query + "%");
+            preparedStatement.setString(3, "%" + query + "%");
+            preparedStatement.setInt(4, limit);
+            preparedStatement.setInt(5, offset);
+            return preparedStatement.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
      * Retrieves the details of a market based on its name.
      *
      * @param marketName The name of the market to retrieve details for.
@@ -350,6 +372,25 @@ public class DatabaseModel {
      */
     public ResultSet getMarketDetails(String marketName) {
         String sql = "SELECT * FROM farmers_market WHERE MarketName = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, marketName);
+            return preparedStatement.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    /**
+     * Retrieves the products of a market based on its name.
+     *
+     * @param marketName The name of the market to retrieve products for.
+     * @return A ResultSet containing the market products.
+     */
+    public ResultSet getMarketProducts(String marketName) {
+        String sql = "SELECT ProductName FROM farmers_market WHERE MarketName = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, marketName);

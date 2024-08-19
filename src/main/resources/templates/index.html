@@ -5,14 +5,24 @@
 </head>
 <body>
 <h1>Farmers Markets</h1>
-<div th:each="market : ${markets}">
-    <p th:text="${market.MarketName}"></p>
-    <p th:text="${market.city} + ', ' + ${market.State} + ' ' + ${market.zip}"></p>
-    <p th:text="'Rating: ' + ${market.average_rating}"></p>
+<form th:action="@{/search}" method="get">
+    <input type="text" name="query" placeholder="Search by Location (City, State, or Zip code)" />
+    <input type="number" name="distance" placeholder="Distance in miles" />
+    <button type="submit">Search</button>
+</form>
+<div th:if="${error}">
+    <p th:text="${error}"></p>
 </div>
+<ul>
+    <li th:each="market : ${markets}">
+        <a th:href="@{'/marketDetailByName?marketName=' + ${market}}">
+            <span th:text="${market}"></span>
+        </a>
+    </li>
+</ul>
 <div>
-    <button th:if="${page > 0}" th:onclick="'window.location.href=\'/?page=' + (${page} - 1) + '&size=' + ${size} + '\''">Previous</button>
-    <button th:if="${markets.size() == size}" th:onclick="'window.location.href=\'/?page=' + (${page} + 1) + '&size=' + ${size} + '\''">Next</button>
+    <a th:if="${currentPage > 1}" th:href="@{'/?page=' + (${currentPage} - 1) + '&query=' + ${query}}">Previous</a>
+    <a th:if="${hasNextPage}" th:href="@{'/?page=' + (${currentPage} + 1) + '&query=' + ${query}}">Next</a>
 </div>
 </body>
 </html>
